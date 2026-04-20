@@ -1,0 +1,30 @@
+{
+  "service_strategies": [
+    {
+      "service": "meu-servico-python",
+      "type": "probabilistic",
+      "param": 0.1,
+      "operation_strategies": [
+        {
+          "operation": "/pagamento",
+          "type": "probabilistic",
+          "param": 1.0
+        },
+        {
+          "operation": "/health",
+          "type": "probabilistic",
+          "param": 0.0
+        },
+        {
+          "operation": "/api/slow",
+          "type": "probabilistic",
+          "param": 0.5
+        }
+      ]
+    }
+  ],
+  "default_strategy": {
+    "type": "probabilistic",
+    "param": 0.05
+  }
+}

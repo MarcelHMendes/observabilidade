@@ -1,0 +1,85 @@
+version: '3.3'
+
+services:
+  minha-aplicacao:
+    build: .
+    ports:
+      - "8080:8080"
+    environment:
+      - OTEL_SERVICE_NAME=minha-app-java
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-collector:4318
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+      - OTEL_TRACES_SAMPLER=jaeger_remote
+      - OTEL_TRACES_SAMPLER_ARG=endpoint=http://jaeger-collector:14250,pollingIntervalMs=5000
+    depends_on:
+      - jaeger-collector
+    networks:
+      - observability-network
+    restart: on-failure
+
+
+  jaeger-collector:
+    image: jaegertracing/jaeger-collector:latest
+    command: [
+      "--es.server-urls=http://elasticsearch:9200",
+      "--sampling.strategies-file=/etc/jaeger/sampling_strategies.json"
+    ]
+    environment:
+      - SPAN_STORAGE_TYPE=elasticsearch
+      - COLLECTOR_OTLP_ENABLED=true
+      - COLLECTOR_OTLP_INSECURE=true
+    ports:
+      - "4317:4317"
+      - "4318:4318"
+      - "14250:14250"
+      - "14268:14268"
+      - "5778:5778"
+    depends_on:
+      - elasticsearch
+    networks:
+      - observability-network
+    volumes:
+      - ./sampling_strategies.json:/etc/jaeger/sampling_strategies.json
+    restart: on-failure
+  jaeger-query:
+    image: jaegertracing/jaeger-query:latest
+    command: [
+      "--es.server-urls=http://elasticsearch:9200"
+    ]
+    environment:
+      - SPAN_STORAGE_TYPE=elasticsearch
+    ports:
+      - "16686:16686"
+    depends_on:
+      - elasticsearch
+    networks:
+      - observability-network
+    restart: on-failure
+
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:7.17.10
+    environment:
+      - discovery.type=single-node
+      - ES_JAVA_OPTS=-Xms512m -Xmx512m
+      - xpack.security.enabled=false
+    ports:
+      - "9200:9200"
+    volumes:
+      - elasticsearch-data:/usr/share/elasticsearch/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9200/_cluster/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - observability-network
+
+volumes:
+  elasticsearch-data:
+
+networks:
+  observability-network:
+    driver: bridge

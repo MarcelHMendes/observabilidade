@@ -1,0 +1,37 @@
+receivers:
+  otlp:
+    protocols:
+      grpc:
+        endpoint: 0.0.0.0:4317
+      http:
+        endpoint: 0.0.0.0:4318
+
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 1024
+
+  memory_limiter:
+    check_interval: 1s
+    limit_mib: 512
+
+exporters:
+  # Usar OTLP gRPC em vez de Jaeger
+  otlp/jaeger:
+    endpoint: jaeger-collector:4317
+    tls:
+      insecure: true
+
+service:
+  extensions: [jaegerremotesampling]  # HABILITA A EXTENSÃO
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [memory_limiter, batch]
+      exporters: [otlp/jaeger]
+
+extensions:
+  jaegerremotesampling:
+    source:
+      reload_interval: 30s  # Recarrega as regras a cada 30s
+      file: /etc/otelcol/sampling_strategies.json  # Arquivo com as regras
