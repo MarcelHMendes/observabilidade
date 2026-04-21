@@ -131,6 +131,8 @@ public class ExemploController {
 
         Span span = Span.current();
         span.setAttribute("operation.delay_ms", delay);
+        span.setAttribute("operation.type", "slow_operation");
+
 
         try {
             Thread.sleep(delay);

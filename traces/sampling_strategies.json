@@ -1,20 +1,10 @@
 {
   "service_strategies": [
     {
-      "service": "meu-servico-python",
+      "service": "minha-app-java",
       "type": "probabilistic",
       "param": 0.1,
       "operation_strategies": [
-        {
-          "operation": "/pagamento",
-          "type": "probabilistic",
-          "param": 1.0
-        },
-        {
-          "operation": "/health",
-          "type": "probabilistic",
-          "param": 0.0
-        },
         {
           "operation": "/api/slow",
           "type": "probabilistic",

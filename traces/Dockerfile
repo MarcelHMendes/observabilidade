@@ -24,19 +24,6 @@ WORKDIR /app
 # Copiar o JAR do estágio builder
 COPY --from=builder /build/target/minha-app-tracing-1.0.0.jar /app/app.jar
 
-# Baixar o OpenTelemetry Java Agent
-#ADD https://github.com/open-telemetry/opentelemetry-java-instrumentation/releases/latest/download/opentelemetry-javaagent.jar /app/opentelemetry-javaagent.jar
-
-# Configurar o agente
-#ENV JAVA_TOOL_OPTIONS="-javaagent:/app/opentelemetry-javaagent.jar"
-
-# Configurações do OpenTelemetry
-#ENV OTEL_SERVICE_NAME=minha-app-java
-#ENV OTEL_TRACES_EXPORTER=otlp
-#ENV OTEL_EXPORTER_OTLP_ENDPOINT=http://otel-collector:4317
-#ENV OTEL_EXPORTER_OTLP_PROTOCOL=grpc
-#ENV OTEL_METRICS_EXPORTER=none
-#ENV OTEL_LOGS_EXPORTER=none
 
 EXPOSE 8080
 

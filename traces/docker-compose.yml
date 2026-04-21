@@ -5,19 +5,20 @@ services:
     build: .
     ports:
       - "8080:8080"
-    environment:
-      - OTEL_SERVICE_NAME=minha-app-java
-      - OTEL_TRACES_EXPORTER=otlp
-      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-collector:4318
-      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
-      - OTEL_METRICS_EXPORTER=none
-      - OTEL_LOGS_EXPORTER=none
-      - OTEL_TRACES_SAMPLER=jaeger_remote
-      - OTEL_TRACES_SAMPLER_ARG=endpoint=http://jaeger-collector:14250,pollingIntervalMs=5000
     depends_on:
       - jaeger-collector
     networks:
       - observability-network
+    environment:
+      - OTEL_SERVICE_NAME=minha-app-java
+      - OTEL_TRACES_EXPORTER=otlp
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://jaeger-collector:4318  # ← Já está correto
+      - OTEL_EXPORTER_OTLP_PROTOCOL=http/protobuf
+      - OTEL_EXPORTER_OTLP_INSECURE=true
+      - OTEL_METRICS_EXPORTER=none
+      - OTEL_LOGS_EXPORTER=none
+      - OTEL_TRACES_SAMPLER=jaeger_remote
+      - OTEL_TRACES_SAMPLER_ARG=endpoint=http://jaeger-collector:14250,pollingIntervalMs=5000
     restart: on-failure
 
 
@@ -25,7 +26,8 @@ services:
     image: jaegertracing/jaeger-collector:latest
     command: [
       "--es.server-urls=http://elasticsearch:9200",
-      "--sampling.strategies-file=/etc/jaeger/sampling_strategies.json"
+      "--sampling.strategies-file=/etc/jaeger/sampling_strategies.json",
+      "--sampling.strategies-reload-interval=30s"
     ]
     environment:
       - SPAN_STORAGE_TYPE=elasticsearch
